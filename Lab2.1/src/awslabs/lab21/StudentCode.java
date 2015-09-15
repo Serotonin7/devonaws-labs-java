@@ -17,16 +17,25 @@ package awslabs.lab21;
 import java.io.File;
 import java.net.URL;
 import java.util.Date;
+import java.util.List;
+
+import org.joda.time.DateTime;
+import org.joda.time.Instant;
 
 import com.amazonaws.regions.Region;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AccessControlList;
+import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.CreateBucketRequest;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
+import com.amazonaws.services.s3.model.Owner;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.PutObjectResult;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
+import com.amazonaws.services.s3.model.SetBucketAclRequest;
 
 /**
  * Project: Lab2.1
@@ -47,7 +56,8 @@ public class StudentCode extends SolutionCode {
     @Override
     public void createBucket(AmazonS3 s3Client, String bucketName, Region region) {
 	//TODO: Replace this call to the super class with your own implementation of the method.
-	super.createBucket(s3Client, bucketName, region);
+	if (!s3Client.doesBucketExist(bucketName))
+    	s3Client.createBucket(bucketName, region.getName());
     }
 
     /**
@@ -62,7 +72,11 @@ public class StudentCode extends SolutionCode {
     @Override
     public void putObject(AmazonS3 s3Client, String bucketName, String sourceFile, String objectKey) {
 	//TODO: Replace this call to the super class with your own implementation of the method.
-	super.putObject(s3Client, bucketName, sourceFile, objectKey);
+		if (s3Client.doesBucketExist(bucketName)){
+			PutObjectResult result = s3Client.putObject(bucketName, objectKey, new File(sourceFile));
+		}else{
+			System.out.println("The bucket you specified does not exist");
+		}
     }
 
     /**
@@ -75,7 +89,8 @@ public class StudentCode extends SolutionCode {
     @Override
     public void listObjects(AmazonS3 s3Client, String bucketName) {
 	//TODO: Replace this call to the super class with your own implementation of the method.
-	super.listObjects(s3Client, bucketName);
+	ObjectListing bucketObjects = s3Client.listObjects(bucketName);
+	System.out.println(bucketObjects.getObjectSummaries());
     }
 
     /**
@@ -90,7 +105,7 @@ public class StudentCode extends SolutionCode {
     @Override
     public void makeObjectPublic(AmazonS3 s3Client, String bucketName, String key) {
 	//TODO: Replace this call to the super class with your own implementation of the method.
-	super.makeObjectPublic(s3Client, bucketName, key);
+    	s3Client.setObjectAcl(bucketName, key, CannedAccessControlList.PublicRead);
     }
 
     /**
@@ -106,7 +121,10 @@ public class StudentCode extends SolutionCode {
     @Override
     public String generatePreSignedUrl(AmazonS3 s3Client, String bucketName, String key) {
 	//TODO: Replace this call to the super class with your own implementation of the method.
-	return super.generatePreSignedUrl(s3Client, bucketName, key);
+    	DateTime dt = new DateTime();
+    	URL preSignedURL = s3Client.generatePresignedUrl(bucketName, key, dt.plusMinutes(30).toDate());
+    	System.out.println(preSignedURL);
+    	return preSignedURL.toString();
     }
 
     /**
@@ -124,6 +142,11 @@ public class StudentCode extends SolutionCode {
     @Override
     public void deleteBucket(AmazonS3 s3Client, String bucketName) {
 	//TODO: Replace this call to the super class with your own implementation of the method.
-	super.deleteBucket(s3Client, bucketName);
+	List<Bucket> listing = s3Client.listBuckets();
+		if (listing.contains(bucketName)){
+			s3Client.deleteBucket(bucketName);
+		}else{
+			System.out.println("The specified bucket cannot be found to preform delete");
+		}
     }
 }

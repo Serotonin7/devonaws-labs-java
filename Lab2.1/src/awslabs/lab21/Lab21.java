@@ -15,7 +15,6 @@
 package awslabs.lab21;
 
 import java.io.File;
-import java.util.UUID;
 
 import awslabs.labutility.LabUtility;
 
@@ -28,19 +27,18 @@ import com.amazonaws.services.s3.model.Bucket;
 
 public class Lab21 {
 
-    private static Region region = Region.getRegion(Regions.US_EAST_1);
-
+    public static Region region = Region.getRegion(Regions.US_WEST_2);
     // BEGIN NON-STUDENT_CODE
     private static ILabCode labCode = new StudentCode();
     private static IOptionalLabCode optionalLabCode = new StudentCode();
     private static String labBucketPrefix = "awslab";
     
-    /**
+    /**s
      * Controls the flow of the lab code execution.
      */
     public static void main(String[] args) {
         try {
-            String bucketName = labBucketPrefix + UUID.randomUUID().toString().substring(0, 8);
+            String bucketName = "aws-testing-bucket-for-superman";//labBucketPrefix + UUID.randomUUID().toString().substring(0, 8);
             String testImage = "test-image.png";
             String publicTestImage = "public-test-image.png";
             String testImage2 = "test-image2.png";
